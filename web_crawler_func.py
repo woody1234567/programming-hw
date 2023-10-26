@@ -3,7 +3,8 @@ import requests
 import pandas as pd
 import random
 
-def booking_crawler(location,checkin,checkout):
+def booking_crawler(location:str,checkin:str,checkout:str):
+
     #picking a random header to avoid the block.
     headerlist = ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 OPR/43.0.2442.991",
@@ -80,7 +81,6 @@ def booking_crawler(location,checkin,checkout):
     #treatment: it is not pretty fair to compare the external comments with booking.com internal comments, so there I treat all the newcomers without internal comments as nan.  
     hotel_comments=soup.find_all(class_="aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1")
     hotel_comments_Series=pd.Series(len(hotel_comments))
-    print(len(hotel_comments))
     for i in range(len(hotel_comments)):
         sub_soup = BeautifulSoup(str(hotel_comments[i]),'html.parser')
         try:
