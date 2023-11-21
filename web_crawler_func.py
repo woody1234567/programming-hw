@@ -99,7 +99,7 @@ def booking_crawler(location:str,checkin:str,checkout:str):
         offset+=page_n
         hotel_info=hotel_info.append(hotel_info_temp,ignore_index=True)
         print(hotel_info.shape)
-        hotel_info=hotel_info.drop_duplicates().dropna(ignore_index=True)
-        
+        hotel_info=hotel_info.drop_duplicates().dropna()
+
     return hotel_info
 
