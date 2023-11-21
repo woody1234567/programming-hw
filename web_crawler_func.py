@@ -27,7 +27,8 @@ def booking_crawler(location:str,checkin:str,checkout:str):
     hotel_info=pd.DataFrame(columns=["name","location","price","rating","distance","comments"])
     hotel_info_temp=pd.DataFrame(columns=["name","location","price","rating","distance","comments"])
     offset=0
-    while hotel_info.shape[0]<150:
+    threshold=150
+    while hotel_info.shape[0] < threshold:
         booking_url="https://www.booking.com/searchresults.html"
         my_params={"ss":location,"checkin":checkin,"checkout":checkout,"offset":offset}
         r=requests.get(booking_url , params=my_params,headers=fake_headers)
@@ -93,12 +94,12 @@ def booking_crawler(location:str,checkin:str,checkout:str):
             try:
                 hotel_comments_Series[i]=sub_soup.find(class_="a3b8729ab1 e6208ee469 cb2cbb3ccb").text
             except:
-                hotel_comments_Series[i]= np.nan
+                hotel_comments_Series[i]= nan
         hotel_info_temp["comments"]=hotel_comments_Series
         offset+=page_n
         hotel_info=hotel_info.append(hotel_info_temp,ignore_index=True)
         print(hotel_info.shape)
-        hotel_info=hotel_info.dropna()
+        hotel_info=hotel_info.drop_duplicates().dropna(ignore_index=True)
+        
     return hotel_info
-
 
