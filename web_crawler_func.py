@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import random
 import sys
+import numpy as np
 
 def booking_crawler(location:str,checkin:str,checkout:str):
 
@@ -24,8 +25,9 @@ def booking_crawler(location:str,checkin:str,checkout:str):
 
     page_n=25
     hotel_info=pd.DataFrame(columns=["name","location","price","rating","distance","comments"])
+    hotel_info_temp=pd.DataFrame(columns=["name","location","price","rating","distance","comments"])
     offset=0
-    while hotel_info.shape[0]<200:
+    while hotel_info.shape[0]<150:
         booking_url="https://www.booking.com/searchresults.html"
         my_params={"ss":location,"checkin":checkin,"checkout":checkout,"offset":offset}
         r=requests.get(booking_url , params=my_params,headers=fake_headers)
@@ -37,22 +39,22 @@ def booking_crawler(location:str,checkin:str,checkout:str):
         hotel_name=soup.find_all(class_="f6431b446c a15b38c233")
         hotel_name_Series=pd.Series(len(hotel_name))
         for i in range(len(hotel_name)):
-            hotel_name_Series[offset+i]=hotel_name[offset+i].string
-        hotel_info["name"]=hotel_name_Series
+            hotel_name_Series[i]=hotel_name[i].string
+        hotel_info_temp["name"]=hotel_name_Series
 
         #finding hotel location
         hotel_location=soup.find_all(attrs={"data-testid": "address"},class_="aee5343fdb def9bc142a")
         hotel_location_Series=pd.Series(len(hotel_location))
         for i in range(len(hotel_location)):
-            hotel_location_Series[offset+i]=hotel_location[offset+i].string
-        hotel_info["location"]=hotel_location_Series
+            hotel_location_Series[i]=hotel_location[i].string
+        hotel_info_temp["location"]=hotel_location_Series
 
         #finding hotel price
         hotel_price=soup.find_all(attrs={"data-testid": "price-and-discounted-price"},class_="f6431b446c fbfd7c1165 e84eb96b1f")
         hotel_price_Series=pd.Series(len(hotel_price))
         for i in range(len(hotel_price)):
-            hotel_price_Series[offset+i]=hotel_price[offset+i].string
-        hotel_info["price"]=hotel_price_Series
+            hotel_price_Series[i]=hotel_price[i].string
+        hotel_info_temp["price"]=hotel_price_Series
 
         #finding hotel score
         #remark: some results have no score since the hotel is new to booking. However, for some of the newcomers, booking.com provide a external score.
@@ -61,25 +63,25 @@ def booking_crawler(location:str,checkin:str,checkout:str):
         hotel_score=soup.find_all(class_="aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1")
         hotel_score_Series=pd.Series(len(hotel_score))
         for i in range(len(hotel_score)):
-            sub_soup = BeautifulSoup(str(hotel_score[offset+i]),'html.parser')
+            sub_soup = BeautifulSoup(str(hotel_score[i]),'html.parser')
             try:
-                hotel_score_Series[offset+i]=sub_soup.find(class_="a3b8729ab1 d86cee9b25").text
+                hotel_score_Series[i]=sub_soup.find(class_="a3b8729ab1 d86cee9b25").text
             except:
-                hotel_score_Series[offset+i]= nan
+                hotel_score_Series[i]= nan
 
         #common class for both types
         #with score
         #aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1
         #without score
         #aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1
-        hotel_info["rating"]=hotel_score_Series
+        hotel_info_temp["rating"]=hotel_score_Series
 
         #finding hotel distance
         hotel_distance=soup.find_all(attrs={"data-testid": "distance"})
         hotel_distance_Series=pd.Series(len(hotel_distance))
         for i in range(len(hotel_distance)):
-            hotel_distance_Series[offset+i]=hotel_distance[offset+i].string
-        hotel_info["distance"]=hotel_distance_Series
+            hotel_distance_Series[i]=hotel_distance[i].string
+        hotel_info_temp["distance"]=hotel_distance_Series
 
         #finding hotel comments
         #remark: some results have no comments since the hotel is new to booking. However, for some of the newcomers, booking.com provide a external comments.
@@ -87,14 +89,16 @@ def booking_crawler(location:str,checkin:str,checkout:str):
         hotel_comments=soup.find_all(class_="aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1")
         hotel_comments_Series=pd.Series(len(hotel_comments))
         for i in range(len(hotel_comments)):
-            sub_soup = BeautifulSoup(str(hotel_comments[offset+i]),'html.parser')
+            sub_soup = BeautifulSoup(str(hotel_comments[i]),'html.parser')
             try:
-                hotel_comments_Series[offset+i]=sub_soup.find(class_="a3b8729ab1 e6208ee469 cb2cbb3ccb").text
+                hotel_comments_Series[i]=sub_soup.find(class_="a3b8729ab1 e6208ee469 cb2cbb3ccb").text
             except:
-                hotel_comments_Series[offset+i]= nan
-        hotel_info["comments"]=hotel_comments_Series
+                hotel_comments_Series[i]= np.nan
+        hotel_info_temp["comments"]=hotel_comments_Series
         offset+=page_n
-
+        hotel_info=hotel_info.append(hotel_info_temp,ignore_index=True)
+        print(hotel_info.shape)
+        hotel_info=hotel_info.dropna()
     return hotel_info
 
 
