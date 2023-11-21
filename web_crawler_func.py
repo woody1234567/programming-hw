@@ -29,6 +29,7 @@ def booking_crawler(location:str,checkin:str,checkout:str):
 
         soup=BeautifulSoup(r.text,"html.parser")
     hotel_info=pd.DataFrame(columns=["name","location","price","rating","distance","comments"])
+
     #finding hotel name
     hotel_name=soup.find_all(class_="f6431b446c a15b38c233")
     hotel_name_Series=pd.Series(len(hotel_name))
@@ -59,9 +60,10 @@ def booking_crawler(location:str,checkin:str,checkout:str):
     for i in range(len(hotel_score)):
         sub_soup = BeautifulSoup(str(hotel_score[i]),'html.parser')
         try:
-            hotel_score_Series[i]=float(sub_soup.find(class_="a3b8729ab1 d86cee9b25").text)
+            hotel_score_Series[i]=sub_soup.find(class_="a3b8729ab1 d86cee9b25").text
         except:
             hotel_score_Series[i]= nan
+
     #common class for both types
     #with score
     #aca0ade214 ebac6e22e9 cd2e7d62b0 a0ff1335a1
